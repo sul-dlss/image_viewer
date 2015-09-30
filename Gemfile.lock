@@ -112,6 +112,7 @@ GEM
     htmlentities (4.3.4)
     http-cookie (1.0.2)
       domain_name (~> 0.5)
+    hurley (0.2)
     i18n (0.7.0)
     is_it_working (1.1.0)
     iso-639 (0.2.5)
@@ -304,6 +305,7 @@ DEPENDENCIES
   dor-rights-auth
   factory_girl_rails
   htmlentities
+  hurley
   is_it_working
   jbuilder (~> 2.0)
   jquery-rails

@@ -16,3 +16,6 @@ flipbook:
 document_cache_root: "<%= File.join(Rails.root, "document_cache") %>"
 
 embed_host: '//127.0.0.1:3000'
+
+purl_resource:
+  public_xml: 'https://purl.stanford.edu/%{druid}.xml'

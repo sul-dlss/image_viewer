@@ -24,28 +24,32 @@ class PurlObject
     end
   end
 
+  
+  # rubocop:disable Metrics/MethodLength, Style/PredicateName
+  def self.has_resource(options)
+    options.each do |key, value|
+      define_method "#{key}_resource" do
+        response_cache[key] ||= cache_resource(key) do
+          fetch_resource(value)
+        end
+      end
+
+      define_method "#{key}_body" do
+        send("#{key}_resource").body if send("#{key}_resource").success?
+      end
+
+      define_method "#{key}?" do
+        send("#{key}_body").present?
+      end
+    end
+  end
+  # rubocop:enable Metrics/MethodLength, Style/PredicateName
+
+  has_resource public_xml: Settings.purl_resource.public_xml
+  alias_method :public_xml, :public_xml_body
+
   attr_accessor :pid
-  attr_accessor :public_xml
-  attr_accessor :mods_xml
-  attr_accessor :manifest_json
-  attr_accessor :flipbook_json
-
-  # properties
-  attr_deferred :titles, :creators, :publisher, :source, :date, :description
-  attr_deferred :description_preferred_citation, :description_contact, :description_rel_publication
-  attr_deferred :contributors, :relations, :identifiers, :repository, :collection, :location, :relation_url
-
-  attr_deferred :degreeconfyr, :cclicense, :cclicensetype, :cclicense_symbol, :odc_license, :odc_type
-  attr_deferred :catalog_key                                                                     # identity
-  attr_deferred :read_group, :embargo_release_date, :copyright_stmt, :use_and_reproduction_stmt  # rights
-  attr_deferred :deliverable_files, :downloadable_files, :type                                   # content
-  attr_deferred :reading_order, :page_start                                                      # flipbook specific
-
-  NAMESPACES = {
-    'oai_dc' => 'http://www.openarchives.org/OAI/2.0/oai_dc/',
-    'dc' => 'http://purl.org/dc/elements/1.1/',
-    'dcterms' => 'http://purl.org/dc/terms/'
-  }
+  attr_deferred :deliverable_files, :downloadable_files, :type
 
   # Checks if the pair tree directory exists in the document cache for a given druid
   #
@@ -77,72 +81,19 @@ class PurlObject
   #
   def initialize(id)
     @pid = id
-
-    @public_xml    = get_metadata('public')
-    @mods_xml      = get_metadata('mods')
-    @manifest_json = get_metadata('manifest')
-    @flipbook_json = get_flipbook_json
     @extracted     = false
   end
 
   def extract_metadata
-    doc = ng_xml('dc', 'identityMetadata', 'contentMetadata', 'rightsMetadata', 'properties')
+    doc = ng_xml('contentMetadata', 'rightsMetadata')
     doc.encoding = 'UTF-8'
 
     # Rights metadata
     rights = doc.root.at_xpath('rightsMetadata').to_s
     parsed_rights = Dor::RightsAuth.parse rights
 
-    # DC Metadata
-    dc = doc.root.at_xpath('*[local-name() = "dc"]', NAMESPACES)
-    unless dc.nil?
-      @titles      = []
-      @description = []
-      @creators    = []
-      @relations   = []
-      @identifiers = []
-      @publisher   = []
-      @downloadable_files = []
-      @description_preferred_citation = []
-      @description_contact = []
-      @description_rel_publication = []
-      @relation_url = []
-
-      dc.xpath('dc:title/text()|dcterms:title/text()', NAMESPACES).collect { |t| @titles.push(t) } # title
-      dc.xpath('dc:creator/text()|dcterms:creator/text()', NAMESPACES).collect { |c| @creators.push(c.to_s) } # creators
-      dc.xpath('dc:relation[not(@*)]', NAMESPACES).collect { |r| @relations.push(r.to_s) } # relations
-      dc.xpath('dc:identifier/text()', NAMESPACES).collect { |c| @identifiers.push(c.to_s) } # identifiers
-      dc.xpath('dc:publisher/text()|dcterms:publisher/text()', NAMESPACES).collect { |c| @publisher.push(c.to_s) } # publishers
-
-      dc.xpath('dc:description[not(@type)]/text()|dcterms:abstract/text()', NAMESPACES).collect { |d| @description.push(d.to_s) } # description
-      dc.xpath('dc:description[@type="preferred citation"]/text()', NAMESPACES).collect { |d| @description_preferred_citation.push(d.to_s) } # description: preferred citation
-      dc.xpath('dc:description[@type="citation/reference"]/text()', NAMESPACES).collect { |d| @description_rel_publication.push(d.to_s) } # description: citation/reference
-      dc.xpath('dc:description[@type="contact"]/text()', NAMESPACES).collect { |d| @description_contact.push(d.to_s) } # description: contact
-
-      # relation: url
-      dc.xpath('dc:relation[@type="url"]/@href', NAMESPACES).collect do |url|
-        label = dc.xpath('dc:relation[@type="url" and @href="' + url + '"]/text()', NAMESPACES) || ''
-        label = url if label.empty?
-        @relation_url.push('label' => label.to_s, 'url' => url.to_s)
-      end
-
-      @contributors = dc.xpath('dc:contributor/text()|dcterms:contributor/text()', NAMESPACES).collect { |t| t.to_s + '<br/>' }
-      @source       = dc.at_xpath('dc:source/text()', NAMESPACES).to_s
-      @date         = dc.at_xpath('dc:date/text()', NAMESPACES).to_s
-      @repository   = dc.at_xpath('dc:relation[@type="repository"]', NAMESPACES).to_s
-      @collection   = dc.at_xpath('dc:relation[@type="collection"]', NAMESPACES).to_s
-      @location     = dc.at_xpath('dc:relation[@type="location"]', NAMESPACES).to_s
-    end
-
-    # Identity Metadata
-    @catalog_key = doc.root.at_xpath('identityMetadata/otherId[@name="catkey"]/text()').to_s
-
     # Content Metadata
     @type = doc.root.xpath('contentMetadata/@type').to_s
-
-    # Book data
-    @reading_order = doc.root.xpath('contentMetadata/bookData/@readingOrder').to_s
-    @page_start = doc.root.xpath('contentMetadata/bookData/@pageStart').to_s
 
     # File data
     @deliverable_files = []
@@ -283,13 +234,6 @@ class PurlObject
 
     end
 
-    # Properties
-    fields = doc.root.at_xpath('fields|properties/fields')
-    unless fields.nil?
-      @degreeconfyr  = fields.at_xpath('degreeconfyr/text()').to_s
-      @cclicense     = fields.at_xpath('cclicense/text()').to_s
-      @cclicensetype = fields.at_xpath('cclicensetype/text()').to_s
-    end
     @extracted = true
   end
 
@@ -306,36 +250,6 @@ class PurlObject
     false
   end
   alias_method :is_image?, :image?
-
-  def book?
-    return true if !type.nil? && type =~ /Book|Manuscript/i
-
-    false
-  end
-  alias_method :is_book?, :book?
-
-  # check if this object has mods content
-  def has_mods?
-    return true unless @mods_xml.blank? || @mods_xml == '<mods/>'
-
-    false
-  end
-
-  alias_method :has_mods, :has_mods?
-
-  def mods_display_object
-    @mods_display_object ||= ModsDisplayObject.new(get_metadata('mods'))
-    @mods_display_object
-  end
-
-  # check if this object has manifest content
-  def has_manifest?
-    return true unless @manifest_json.blank? || @manifest_json == '<manifest/>'
-
-    false
-  end
-
-  alias_method :has_manifest, :has_manifest?
 
   private
 
@@ -357,37 +271,33 @@ class PurlObject
     contents
   end
 
-  # map the given document public xml to json
-  def get_flipbook_json
-    pages = []
-    extract_metadata
-
-    @deliverable_files.collect do |file|
-      if file.mimetype == 'image/jp2' && (file.type == 'image' || file.type == 'page') && file.height > 0 && file.width > 0 && (file.rights_stanford || file.rights_world)
-        page = {
-          height: file.height,
-          width: file.width,
-          levels: file.levels,
-          resourceType: file.type,
-          label: file.description_label,
-          stacksURL: get_img_base_url(@pid, Settings.stacks.url, file)
-        }
-
-        pages.push(page)
+  def attributes
+    { druid: pid }
+  end
+  
+  concerning :Fetching do
+    def cache_resource(key, &block)
+      if Settings.resource_cache.enabled
+        Rails.cache.fetch("#{cache_key}/#{key}", expires_in: Settings.resource_cache.lifetime, &block)
+      else
+        yield
       end
     end
 
-    {
-      id: "#{@catalog_key}",
-      readGroup: @read_group,
-      objectId: "#{@pid}",
-      defaultViewMode: 2,
-      bookTitle: coder.decode(@titles.join(' -- ')),
-      readingOrder: @reading_order,  # "rtl"
-      pageStart: page_start,  # "left"
-      bookURL: !(@catalog_key.nil? || @catalog_key.empty?) ? "http://searchworks.stanford.edu/view/#{@catalog_key}" : '',
-      pages: pages
-    }
+    def response_cache
+      @response_cache ||= {}
+    end
+
+    def fetch_resource(value)
+      url_or_path = value % attributes
+
+      case url_or_path
+      when /^http/
+        Hurley.get(url_or_path)
+      else
+        DocumentCacheResource.new(url_or_path)
+      end
+    end
   end
 
   def ng_xml(*streams)

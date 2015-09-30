@@ -84,3 +84,4 @@ end
 gem 'mods_display', '~> 0.3.2'
 gem 'htmlentities'
 gem 'dor-rights-auth'
+gem 'hurley'

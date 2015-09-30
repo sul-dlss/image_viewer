@@ -1,11 +1,11 @@
 set :application, 'purl'
-set :repo_url, 'https://github.com/sul-dlss/purl.git'
+set :repo_url, 'https://github.com/sul-dlss/image_viewer.git'
 
 # Default branch is :master
 # ask :branch, proc { `git rev-parse --abbrev-ref HEAD`.chomp }.call
 
 # Default deploy_to directory is /var/www/my_app
-set :deploy_to, '/home/lyberadmin/purl'
+set :deploy_to, '/opt/app/image_viewer/image_viewer'
 
 # Default value for :scm is :git
 # set :scm, :git

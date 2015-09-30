@@ -4,4 +4,4 @@
 
 require File.expand_path('../config/application', __FILE__)
 
-Purl::Application.load_tasks
+ImageViewer::Application.load_tasks
