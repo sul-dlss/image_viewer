@@ -7,25 +7,23 @@ module Purl
     end
 
     # check if file is ready (deliver = yes or publish = yes)
-    def is_file_ready(file)
+    def is_file_ready?(file)
       file && (file['deliver'] != 'no' || file['publish'] != 'no')
     end
 
     # construct JSON array for delivering image objects
-    def get_image_json_array(deliverable_files)
+    def get_image_json_array(obj)
       json_array = []
 
-      deliverable_files.each do |deliverable_file|
+      obj.content_metadata.deliverable_files.each do |deliverable_file|
         id       = get_jp2_id(deliverable_file.filename.to_s)
         width    = deliverable_file.width.to_s.empty? ? 0 : deliverable_file.width.to_i
         height   = deliverable_file.height.to_s.empty? ? 0 : deliverable_file.height.to_i
         sequence = deliverable_file.sequence.to_s.empty? ? '0' : deliverable_file.sequence.to_s
 
-        rights_world         = deliverable_file.rights_world.to_s
-        rights_world_rule    = deliverable_file.rights_world_rule.to_s
-        rights_stanford      = deliverable_file.rights_stanford.to_s
-        rights_stanford_rule = deliverable_file.rights_stanford_rule.to_s
-
+        rights_world, rights_world_rule = obj.rights.world_rights_for_file(deliverable_file.filename)
+        rights_stanford, rights_stanford_rule = obj.rights.stanford_only_rights_for_file(deliverable_file.filename)
+  
         unless id.blank?
           json_array.push(
             id: get_jp2_id(deliverable_file.filename.to_s),
@@ -80,9 +78,7 @@ module Purl
     def get_file_label(deliverable_file)
       label = get_jp2_id(deliverable_file.filename.to_s)
 
-      unless deliverable_file.description_label.blank?
-        label = deliverable_file.description_label.to_s
-      end
+      label = deliverable_file.label.to_s unless deliverable_file.label.blank?
 
       label.truncate(45)
     end
@@ -98,6 +94,6 @@ module Purl
       URI.encode(url)
     end
 
-    module_function :get_jp2_id, :get_image_json_array, :get_img_base_url, :get_file_label, :get_file_url
+    module_function :is_file_ready?, :get_jp2_id, :get_image_json_array, :get_img_base_url, :get_file_label, :get_file_url
   end
 end

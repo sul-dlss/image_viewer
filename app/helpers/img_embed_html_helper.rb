@@ -17,7 +17,7 @@ module ImgEmbedHtmlHelper
       page: page.join(''),
       peStacksURL: Settings.stacks.url,
       purlServerURL: purl_server,
-      pePid: @purl.pid,
+      pePid: @purl.druid,
       peImgInfo: get_image_json_array
     }
   end

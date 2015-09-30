@@ -291,7 +291,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  byebug (~> 5.0)
+  byebug
   cancancan (~> 1.10)
   capistrano (~> 3.0)
   capistrano-bundler

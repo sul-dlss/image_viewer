@@ -12,6 +12,10 @@ class EmbedController < ApplicationController
   before_action :load_purl, except: [:purl_embed_jquery_plugin]
   before_action :validate_image, except: [:purl_embed_jquery_plugin]
 
+  rescue_from PurlResource::ObjectNotReady do
+    render_404
+  end
+
   def show
     render layout: 'purl_embed'
   end
@@ -41,10 +45,10 @@ class EmbedController < ApplicationController
   end
 
   def load_purl
-    @purl = PurlObject.find(params[:id])
+    @purl = PurlResource.find(params[:id])
 
     # Catch well formed druids that don't exist in the document cache
-    if @purl.nil?
+    unless @purl.ready?
       render_404
       return false
     end

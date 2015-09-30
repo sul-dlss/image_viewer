@@ -4,18 +4,16 @@
     <title>Stanford Digital Repository</title>
     <link rel="shortcut icon" href="favicon.ico" />
     <%= stylesheet_link_tag 'purl_embed' %>
+    <%= javascript_include_tag 'application', 'purl_embed' %>
   </head>
   <body>
     <div class="pe-container">
       <%= yield %>
     </div>
 
-    <%= javascript_include_tag 'jquery', 'purl_embed'%>
-    <%= render :partial => 'purl/image/json_embed' %>
+    <%= render :partial => 'embed/json_embed' %>
     <script type="text/javascript">
-      $(function() { var pe = new purlEmbed(peImgInfo, pePid, peStacksURL); });
+      $(function() { var pe = new purlEmbed(peImgInfo, pePid, peStacksURL, {}, '.pe-container'); });
     </script>
-
-    <%= render :partial => 'purl/ga' if Rails.env.production? %>
   </body>
 </html>
