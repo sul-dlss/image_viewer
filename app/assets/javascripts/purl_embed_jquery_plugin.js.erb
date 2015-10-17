@@ -5,16 +5,13 @@
   $.fn.embedPurl = function(config) {
     var height = parseInt(config.height, 10),
         width = parseInt(config.width, 10),
-        $this = $(this),
-        serverURL = "<%= Rails.application.config.purl_url %>";
+        $this = $(this);
 
     if (!isNaN(width)) $this.width(width);
     if (!isNaN(height)) $this.height(height);
 
-    $.getJSON(serverURL + '/' + config.druid + '/embed-html-json?callback=?')
+    $.getJSON('<%= Rails.application.config.purl_url %>' + '/' + config.druid + '/embed-html-json?callback=?')
       .done(function(obj) {
-        purlServerURL = obj.purlServerURL;
-        peServerURL = obj.purlServerURL;
         peContainerWidth  = $this.width();
         peContainerHeight = $this.height();
 

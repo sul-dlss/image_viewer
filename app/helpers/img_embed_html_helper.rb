@@ -1,8 +1,5 @@
 module ImgEmbedHtmlHelper
   def imgEmbedHtml
-    purl_server = request.scheme + '://' + request.host_with_port
-    purl_server = purl_server.gsub(/image-viewer.stanford.edu/, 'purl.stanford.edu')
-
     page = [
       '<div class="pe-container">'
     ]
@@ -16,7 +13,6 @@ module ImgEmbedHtmlHelper
     {
       page: page.join(''),
       peStacksURL: Settings.stacks.url,
-      purlServerURL: purl_server,
       pePid: @purl.druid,
       peImgInfo: get_image_json_array
     }
