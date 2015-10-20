@@ -1,6 +1,6 @@
 <%
   purl_server = request.scheme + "://" + request.host_with_port
-  purl_server = purl_server.gsub(/image-viewer.stanford.edu/, 'purl.stanford.edu')
+  purl_server = purl_server.gsub(/image-viewer.*.stanford.edu/, Settings.purl.url)
   purl_url = purl_server + "/" +@purl.druid
 %>
 <%= render :partial => 'embed/thumbs_nav_top', :locals => { :purl_url => purl_url, :purl_server => purl_server } %>
