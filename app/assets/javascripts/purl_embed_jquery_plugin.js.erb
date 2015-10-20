@@ -10,7 +10,7 @@
     if (!isNaN(width)) $this.width(width);
     if (!isNaN(height)) $this.height(height);
 
-    $.getJSON('<%= Rails.application.config.purl_url %>' + '/' + config.druid + '/embed-html-json?callback=?')
+    $.getJSON('<%= Rails.application.config.asset_host %>' + config.druid + '/embed-html-json?callback=?')
       .done(function(obj) {
         peContainerWidth  = $this.width();
         peContainerHeight = $this.height();
