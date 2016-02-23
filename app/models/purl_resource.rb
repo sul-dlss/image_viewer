@@ -118,7 +118,7 @@ class PurlResource
 
       case url_or_path
       when /^http/
-        Hurley.get(url_or_path)
+        Faraday.get(url_or_path)
       else
         DocumentCacheResource.new(url_or_path)
       end
