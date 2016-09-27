@@ -1,13 +1,15 @@
 source 'https://rubygems.org'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
-gem 'rails', '4.2.7.1'
+gem 'rails', '~> 5.0.0', '>= 5.0.0.1'
 # Use sqlite3 as the database (during local development)
 gem 'sqlite3'
+# Use Puma as the app server
+gem 'puma', '~> 3.0'
 # Use SCSS for stylesheets
 gem 'sass-rails', '~> 5.0'
 # Use Uglifier as compressor for JavaScript assets
-gem 'uglifier', '>= 1.3.0'
+gem 'uglifier', '>= 2.7.2'
 # JS Runtime. See https://github.com/rails/execjs#readme for more supported runtimes
 gem 'therubyracer'
 # A gem for simple rails invornment specific config
@@ -16,9 +18,7 @@ gem 'config'
 gem 'jquery-rails'
 
 # Build JSON APIs with ease. Read more: https://github.com/rails/jbuilder
-gem 'jbuilder', '~> 2.0'
-# bundle exec rake doc:rails generates the API under doc/api.
-gem 'sdoc', '~> 0.4.0', group: :doc
+gem 'jbuilder', '~> 2.5'
 
 # Use ActiveModel has_secure_password
 # gem 'bcrypt', '~> 3.1.7'
@@ -43,8 +43,12 @@ gem 'honeybadger', '~> 2.0'
 gem 'is_it_working'
 
 group :development do
-  # Access an IRB console on exception pages or by using <%= console %> in views
-  gem 'web-console', '~> 2.0'
+  # Access an IRB console on exception pages or by using <%= console %> anywhere in the code.
+  gem 'web-console'
+  gem 'listen', '~> 3.0.5'
+  # Spring speeds up development by keeping your application running in the background. Read more: https://github.com/rails/spring
+  gem 'spring'
+  gem 'spring-watcher-listen', '~> 2.0.0'
 end
 
 group :development, :test do
@@ -53,6 +57,8 @@ group :development, :test do
 
   # RSpec for testing
   gem 'rspec-rails', '~> 3.0'
+
+  gem 'rails-controller-testing'
 
   # Capybara for feature/integration tests
   gem 'capybara'
