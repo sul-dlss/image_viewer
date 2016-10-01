@@ -20,7 +20,7 @@ set :deploy_to, '/opt/app/image_viewer/image_viewer'
 # set :pty, true
 
 # Default value for :linked_files is []
-set :linked_files, %w(config/secrets.yml config/initializers/squash_exceptions.rb)
+set :linked_files, %w(config/secrets.yml config/honeybadger.yml)
 
 # Default value for linked_dirs is []
 set :linked_dirs, %w(config/settings log tmp/pids tmp/cache tmp/sockets vendor/bundle public/system)
@@ -30,5 +30,3 @@ set :linked_dirs, %w(config/settings log tmp/pids tmp/cache tmp/sockets vendor/b
 
 # Default value for keep_releases is 5
 # set :keep_releases, 5
-
-before 'deploy:publishing', 'squash:write_revision'

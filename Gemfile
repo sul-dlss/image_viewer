@@ -37,11 +37,7 @@ group :deployment do
   gem 'net-ssh', '~> 2.9'
 end
 
-# Use Squash for exception reporting
-gem 'squash_ruby', require: 'squash/ruby'
-
-# Pinned to 1.3.3 until https://github.com/SquareSquash/rails/pull/15
-gem 'squash_rails', '1.3.3', require: 'squash/rails'
+gem 'honeybadger', '~> 2.0'
 
 # Use is_it_working to monitor the application
 gem 'is_it_working'
