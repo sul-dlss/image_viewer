@@ -4,3 +4,5 @@
 # ImageViewer
 
 Legacy zoom-pan-rotate viewer extracted from PURL.
+
+Used by https://github.com/sul-dlss/revs and https://github.com/sul-dlss/frda
